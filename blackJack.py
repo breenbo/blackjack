@@ -7,6 +7,10 @@
 #  6. use OOP
 #  7. can add other players
 
+########################################
+
+#  for split : use set() iot see if there are double items (len(set(l))<len(l))
+
 from random import *
 
 def printGame(player, cards, points, money = 100, bet = 10, win = 0, final = 'no'):
@@ -47,8 +51,6 @@ def playerNb():
     """TODO: Docstring for nbPlayer.
     :returns: number of players
     """
-    #  while int(nb) not in range(1,5):
-        #  nb = input('Number of players (1 to 4) :')
     nb = 0
     while nb not in range(1, 5):
         print('Please choose 1 to 4 players.')
@@ -63,68 +65,6 @@ def playerNb():
             else:
                 break
     return(nb)
-
-
-# FUNCTION TO DO IOT USE ALSO WITH DEALER, BUT AUTO
-def playTurn(player, dealer = 'no'):
-    # human player turn
-    if dealer == 'no':
-        initialBet = input("What's your bet ? ")
-        while True:
-            try:
-                int(initialBet)
-            except:
-                print('Please bet an integer...')
-                initialBet = input("What's your bet ? ")
-                continue
-            else:
-                break
-        bustedPrint = "Sorry, but you're BUSTED ! Gimme your money...\n\n"
-        winPrint = "Congrat's, You WON ! Take your money !\n"
-    # computer turn
-    else:
-        initialBet = 0
-        bustedPrint = "Congrats, I'm BUSTED, take your money...\n\n"
-        winPrint = "Sorry, but I WON, gimme your money !"
-
-    nextMove = ''
-    while True:
-        # display cards for each players and dealer for each turn
-        if dealer =='no':
-            printGame(d.name, d.cards, d.calculPoint())
-            printGame(player.name, player.cards, player.calculPoint(), bet = initialBet, money = player.money)
-        # auto play for dealer
-        else:
-            printGame(d.name, d.cards, d.calculPoint(), final = 'yes')
-            while player.calculPoint() < 17:
-                player.hit()
-                printGame(d.name, d.cards, d.calculPoint(), final = 'yes')
-
-        # check if busted (score > 21)
-        # common
-        if player.winLost() == 'busted':
-            #  print(bustedPrint)
-            #  print("Sorry, but you're BUSTED ! Gimme your money...\n\n")
-            break
-        elif player.winLost() == 'win':
-            #  print(winPrint)
-            #  print("You WON ! Take your money !\n")
-            break
-
-        if dealer =='no':
-            nextMove = input("What's your next move ? \n H for hit - S for Stand - D for double - T for Split - Q for quit\n ")
-
-            if nextMove in 'HhDd':
-                player.hit()
-            elif nextMove in 'SsQq':
-                break
-        else:
-            # break the loop if dealer score < 21 and no simple winner
-            if player.calculPoint() < 21:
-                #  print("We have to check")
-                break
-
-    pass
 
 
 class Dealer(object):
@@ -145,7 +85,6 @@ class Dealer(object):
         n1 = randint(0, len(self.game) - 1)
         n2 = randint(0, len(self.game) - 1)
         self.cards = [self.game[n1], self.game[n2]]
-        #  self.cards = ['A', 'K' , 2]
         self.name = 'dealer'
         self.score = 0
 
@@ -171,14 +110,29 @@ class Dealer(object):
             self.score -= 10
         return(self.score)
 
-    def winLost(self):
-        if self.score > 21:
-            return('busted')
-        elif self.score == 21:
-            return('win')
-        else:
-            return('continue')
+    def playTurn(self):
+        printGame(self.name, self.cards, self.calculPoint(), final = 'yes')
+        while True:
+            while self.calculPoint() < 17:
+                self.hit()
+                printGame(self.name, self.cards, self.calculPoint(), final = 'yes')
 
+            if self.calculPoint() > 21:
+                print("Congrats, I'm BUSTED, take your money...\n\n")
+                return('busted')
+                #  print("Sorry, but you're BUSTED ! Gimme your money...\n\n")
+                break
+            # check if simple win (score = 21) : stop the turn
+            elif self.calculPoint() == 21:
+                return('win')
+                #  print(winPrint)
+                #  print("You WON ! Take your money !\n")
+                break
+            # break the loop if dealer score < 21 and no simple winner : compare scores with another function
+            else:
+                print("We have to check")
+                return(self.calculPoint())
+                break
 
 class Player(Dealer):
     """
@@ -188,27 +142,51 @@ class Player(Dealer):
     return : a list of cards, money, bet and point of hand 
     """
 
-    #  def __init__(self, name, money):
     def __init__(self, money, number):
         Dealer.__init__(self)
+        # number to ask for player name
         self.name = input('Player ' + str(number) + ', what is your name ? ')
+        self.bet = input("What's your bet ? ")
         self.money = money
 
-    def calculWin(self, bet, hitStand):
-        """
-        bonus : double, blackjack, split
-        Faire dictionnaire avec les gains possibles
-        """
-        bonus = {'blackjack':1.5, 'double':2, 'split':2}
-        pass
+    def playTurn(self):
+        #  bet = input("What's your bet ? ")
+        while True:
+            try:
+                int(self.bet)
+            except:
+                print('Please bet an integer...')
+                self.bet = input("What's your bet ? ")
+                continue
+            else:
+                break
+        nextMove = ''
+        while True:
+            printGame(self.name, self.cards, self.calculPoint(), self.bet, self.money)
+            if self.calculPoint() > 21:
+                print('BUUUSTED !')
+                return('busted')
+                break
+            elif self.calculPoint() == 21:
+                return('win')
+                #  print(winPrint)
+                #  print("You WON ! Take your money !\n")
+                break
+
+            nextMove = input("What's your next move ? \n H for hit - S for Stand - D for double - T for Split - Q for quit\n ")
+            if nextMove in 'HhDd':
+                self.hit()
+            elif nextMove in 'SsQq':
+                return(self.calculPoint())
+                break
 
     def calculMoney(self, winLoss):
+        bonus = {'blackjack':1.5, 'double':2, 'split':2}
         # use self.money to use player's money
-        # use calculWin
         if winLoss == 'win':
-            self.money += self.bet
+            self.money += int(self.bet)
         elif winLoss == 'lost':
-            self.money -= self.bet
+            self.money -= int(self.bet)
         elif winLoss == 'draw':
             pass
 
@@ -222,55 +200,18 @@ d = Dealer()
 print(intro)
 # initiate the game : nb of players and names
 nbPlayer = playerNb()
-#  names = playerName(nb)
 
 printGame(d.name, d.cards, d.calculPoint())
 # display cards fos each players and dealer
+players = {}
+# use dict instead of increment variable name... Usefull to use players for another round, or abandon, or etc.
+# first round : create players
 for n in range(1, nbPlayer + 1):
-    p = Player(400, n)
-    playTurn(p)
+    players[n] = Player(400, n)
+    #  players[n].playTurn()
+    result = players[n].playTurn()
+    if result == 'busted':
+        players[n].calculMoney('lost')
+        print(players[n].money)
 
-playTurn(d, 'yes')
-print(d.calculPoint())
-print(p.calculPoint())
-    # take player bet and verify that's an integer
-
-
-
-
-
-    #  initialBet = input("What's your bet ? ")
-    #  while True:
-        #  try:
-            #  int(initialBet)
-        #  except:
-            #  print('Please bet an integer...')
-            #  initialBet = input("What's your bet ? ")
-            #  continue
-        #  else:
-            #  break
-
-    #  nextMove = ''
-    #  while nextMove != 'Q' and nextMove != 'S':
-
-    #  while True:
-        #  # display cards fos each players and dealer for each turn
-        #  printGame(d.name, d.cards, d.calculPoint())
-        #  printGame(p.name, p.cards, p.calculPoint(), bet = initialBet, money = p.money)
-
-        #  # check if busted (score > 21)
-        #  if p.winLost() == 'busted':
-            #  print("Sorry, but you're BUSTED ! Gimme your money...")
-            #  break
-        #  elif p.winLost() == 'win':
-            #  print("You WON ! Take your money !")
-            #  break
-
-        #  nextMove = input("What's your next move ? \n H for hit - S for Stand - D for double - T for Split - Q for quit\n ")
-
-        #  if nextMove in 'HhDd':
-            #  p.hit()
-        #  elif nextMove in 'SsQq':
-            #  break
-
-# End of players turn, now the dealers turn
+d.playTurn()
