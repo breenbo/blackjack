@@ -88,6 +88,15 @@ class Dealer(object):
         self.name = 'dealer'
         self.score = 0
 
+    def resetCards(self):
+        """TODO: Docstring for resetCards.
+        :returns: a new pair of cards for another round
+        """
+        n1 = randint(0, len(self.game) - 1)
+        n2 = randint(0, len(self.game) - 1)
+        self.cards = [self.game[n1], self.game[n2]]
+        self.score = 0
+
     def hit(self):
         nb = randint(0, len(self.game) - 1)
         self.cards.append(self.game[nb])
@@ -125,8 +134,7 @@ class Dealer(object):
             # check if simple win (score = 21) : stop the turn
             elif self.calculPoint() == 21:
                 return('win')
-                #  print(winPrint)
-                #  print("You WON ! Take your money !\n")
+                print("I WON, or I didn't loose, nevermind, gimme my money !")
                 break
             # break the loop if dealer score < 21 and no simple winner : compare scores with another function
             else:
@@ -200,18 +208,35 @@ d = Dealer()
 print(intro)
 # initiate the game : nb of players and names
 nbPlayer = playerNb()
+initialMoney = input("How many bucks for the players ? \n")
+try:
+    int(initialMoney)
+except:
+    print("Please enter an integer...\n")
+    initialMoney = input("How many bucks for the players ? \n")
+else:
+    print("Let's the party begin !\n")
 
 printGame(d.name, d.cards, d.calculPoint())
 # display cards fos each players and dealer
 players = {}
 # use dict instead of increment variable name... Usefull to use players for another round, or abandon, or etc.
 # first round : create players
-for n in range(1, nbPlayer + 1):
-    players[n] = Player(400, n)
-    #  players[n].playTurn()
-    result = players[n].playTurn()
-    if result == 'busted':
-        players[n].calculMoney('lost')
-        print(players[n].money)
+roundCount = 0
+if roundCount == 0:
+    for n in range(1, nbPlayer  + 1):
+        players[n] = Player(int(initialMoney), n)
+    roundCount += 1
 
-d.playTurn()
+anotherRound = 'y'
+while anotherRound in 'yY':
+    for n in range(1, nbPlayer + 1):
+        #  players[n] = Player(int(initialMoney), n)
+        #  players[n].playTurn()
+        result = players[n].playTurn()
+        if result == 'busted':
+            players[n].calculMoney('lost')
+            print(players[n].money)
+    d.playTurn()
+
+    anotherRound = input("Another round ? \nY - N : ")
