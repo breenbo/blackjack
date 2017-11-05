@@ -16,7 +16,7 @@ from random import *
 def printGame(player, cards, points, money = 100, bet = 10, win = 0, final = 'no'):
     """
     print board
-    :returns: display board with played cards, and usefull infos for players
+    :returns: display board with played cards, and useful infos for players
     """
     # use intermediate variable carte=list() unless both variables change
     cartes = list(cards)
@@ -42,6 +42,9 @@ def printGame(player, cards, points, money = 100, bet = 10, win = 0, final = 'no
         screen += " Money        : " + str(money) + " dollars left.\n"
         screen += " Bet          : " + str(bet) + " dollars\n"
         screen += " Possible win : " + str(win) + " dollars.\n"
+    else:
+        if final == 'yes':
+            screen += " Hand score   : " + str(points) + " points.\n"
 
     # add comments if Blackjack !
     print(screen)
@@ -127,14 +130,15 @@ class Dealer(object):
                 printGame(self.name, self.cards, self.calculPoint(), final = 'yes')
 
             if self.calculPoint() > 21:
+                printGame(self.name, self.cards, self.calculPoint(), final = 'yes')
                 print("Congrats, I'm BUSTED, take your money...\n\n")
                 return('busted')
-                #  print("Sorry, but you're BUSTED ! Gimme your money...\n\n")
                 break
             # check if simple win (score = 21) : stop the turn
             elif self.calculPoint() == 21:
+                printGame(self.name, self.cards, self.calculPoint(), final = 'yes')
+                print("I WON, or I didn't loose, nevermind, gimme your money !")
                 return('win')
-                print("I WON, or I didn't loose, nevermind, gimme my money !")
                 break
             # break the loop if dealer score < 21 and no simple winner : compare scores with another function
             else:
@@ -150,52 +154,55 @@ class Player(Dealer):
     return : a list of cards, money, bet and point of hand 
     """
 
-    def __init__(self, money, number):
+    def __init__(self, money, number, bet = 0):
         Dealer.__init__(self)
         # number to ask for player name
         self.name = input('Player ' + str(number) + ', what is your name ? ')
-        self.bet = input("What's your bet ? ")
         self.money = money
+        self.bet = bet
 
     def playTurn(self):
-        #  bet = input("What's your bet ? ")
+        self.bet = input(str(self.name) + ", what's your bet ? ")
         while True:
             try:
                 int(self.bet)
             except:
-                print('Please bet an integer...')
+                print('Be kind ' + str(self.name) + ', please bet an integer...')
                 self.bet = input("What's your bet ? ")
                 continue
             else:
+                while int(self.bet) > int(self.money):
+                    print("Come on, you can't bet more than you have...")
+                    self.bet = input("Now, what's your bet ? ")
                 break
         nextMove = ''
+        self.money = int(self.money) - int(self.bet)
         while True:
-            printGame(self.name, self.cards, self.calculPoint(), self.bet, self.money)
+            printGame(self.name, self.cards, self.calculPoint(), bet = self.bet, money = self.money)
             if self.calculPoint() > 21:
-                print('BUUUSTED !')
+                print("Sorry, but you're BUSTED, gimme your money and... NEXT !\n")
                 return('busted')
                 break
             elif self.calculPoint() == 21:
                 return('win')
-                #  print(winPrint)
-                #  print("You WON ! Take your money !\n")
+                print("Congrat's, you WON ! Take your money !\n")
                 break
 
-            nextMove = input("What's your next move ? \n H for hit - S for Stand - D for double - T for Split - Q for quit\n ")
+            nextMove = input("What's your next move ? \n [H]it - [S]tand - [D]ouble - Spli[t] - [Q]uit\n ")
             if nextMove in 'HhDd':
                 self.hit()
             elif nextMove in 'SsQq':
                 return(self.calculPoint())
                 break
 
-    def calculMoney(self, winLoss):
-        bonus = {'blackjack':1.5, 'double':2, 'split':2}
+    def calculMoney(self, winLoss, bonus = 'none'):
+        bonusCoef = {'none':1, 'blackjack':1.5, 'double':2, 'split':2}
         # use self.money to use player's money
         if winLoss == 'win':
-            self.money += int(self.bet)
-        elif winLoss == 'lost':
-            self.money -= int(self.bet)
-        elif winLoss == 'draw':
+            self.money += int(self.bet * bonusCoef[bonus])
+        elif winLoss in ['busted','lost']:
+            self.money -= int(self.bet * bonusCoef[bonus])
+        else:
             pass
 
 
@@ -217,6 +224,7 @@ except:
 else:
     print("Let's the party begin !\n")
 
+# display dealer cards before bet
 #  printGame(d.name, d.cards, d.calculPoint())
 
 # display cards fos each players and dealer
@@ -233,17 +241,49 @@ while anotherRound in 'yY':
         roundCount += 1
     # reset cards for another round
     else:
-        for n in range(1, nbPlayer + 1):
+        # use dic because player with no money are deleted
+        for n in players:
             players[n].resetCards()
+        d.resetCards()
 
     # manage players turn with playTurn() method
-    for n in range(1, nbPlayer + 1):
-        printGame(d.name, d.cards, d.calculPoint())
-        result = players[n].playTurn()
-        if result == 'busted':
-            players[n].calculMoney('lost')
-            print(players[n].money)
+    countLost = 0
+    for n in players:
+        # allow only player with money to play
+        if players[n].money > 0:
+            printGame(d.name, d.cards, d.calculPoint())
+            result = players[n].playTurn()
+            #  players[n].calculMoney(result)
+        else:
+            print(players[n].name + ", you can't play : you don't have money anymore")
+            countLost += 1
+    # check if all have lost, end of game
+    if countLost == len(players):
+        print("\nOk, you all have lost, goodbye felows, thanks for the money !")
+        break
+
     # dealer'r turn, with it's own method
     d.playTurn()
 
-    anotherRound = input("Another round ? \nY - N : ")
+    # compare players game with dealer
+    # possibly have to change busted and win rules
+    for p in players:
+        points = players[p].calculPoint()
+        if points > 21:
+            print(players[p].name + ", you're BUSTED")
+            players[p].calculMoney('lost')
+        else:
+            if d.calculPoint() > 21:
+                print("OMG, impossible, I'm... I'm BUSTED..." + players[p].name + ", you have to be paid...\n")
+                players[p].calculMoney('win')
+            elif points == d.calculPoint():
+                print("Ladies and gentlemen, we have a draw with " + players[p].name + " !\n")
+                players[p].calculMoney('win')
+            elif points > d.calculPoint():
+                print("NOOOOOO ! I've lost ! I'm gonna kill you, you ear me " + players[n].name + " ?\n")
+                players[p].calculMoney('win')
+            elif points < d.calculPoint():
+                print("Ahahahahahahaha, I've WON, you 'dear' " + players[n].name + " !\n")
+                players[p].calculMoney('win')
+
+    anotherRound = input("Another round ? \n[Y]es - [N]o : ")
