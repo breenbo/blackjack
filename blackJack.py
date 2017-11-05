@@ -217,26 +217,33 @@ except:
 else:
     print("Let's the party begin !\n")
 
-printGame(d.name, d.cards, d.calculPoint())
+#  printGame(d.name, d.cards, d.calculPoint())
+
 # display cards fos each players and dealer
 players = {}
 # use dict instead of increment variable name... Usefull to use players for another round, or abandon, or etc.
-# first round : create players
-roundCount = 0
-if roundCount == 0:
-    for n in range(1, nbPlayer  + 1):
-        players[n] = Player(int(initialMoney), n)
-    roundCount += 1
 
 anotherRound = 'y'
+roundCount = 0
 while anotherRound in 'yY':
+    # first round : create players
+    if roundCount == 0:
+        for n in range(1, nbPlayer + 1):
+            players[n] = Player(int(initialMoney), n)
+        roundCount += 1
+    # reset cards for another round
+    else:
+        for n in range(1, nbPlayer + 1):
+            players[n].resetCards()
+
+    # manage players turn with playTurn() method
     for n in range(1, nbPlayer + 1):
-        #  players[n] = Player(int(initialMoney), n)
-        #  players[n].playTurn()
+        printGame(d.name, d.cards, d.calculPoint())
         result = players[n].playTurn()
         if result == 'busted':
             players[n].calculMoney('lost')
             print(players[n].money)
+    # dealer'r turn, with it's own method
     d.playTurn()
 
     anotherRound = input("Another round ? \nY - N : ")
