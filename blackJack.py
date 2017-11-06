@@ -7,7 +7,7 @@
 #  6. use OOP
 #  7. can add other players
 
-########################################
+################################################################################
 
 #  for split : use set() iot see if there are double items (len(set(l))<len(l))
 
