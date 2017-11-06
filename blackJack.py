@@ -189,19 +189,31 @@ class Player(Dealer):
                 break
 
             nextMove = input("What's your next move ? \n [H]it - [S]tand - [D]ouble - Spli[t] - [Q]uit\n ")
-            if nextMove in 'HhDd':
+            if nextMove in 'Hh':
                 self.hit()
-            elif nextMove in 'SsQq':
+            elif nextMove in 'Dd':
+                self.hit()
+                self.bet = 2 * int(self.bet)
                 return(self.calculPoint())
+                break
+            elif nextMove in 'Ss':
+                return(self.calculPoint())
+                break
+            elif nextMove in 'Qq':
+                #  self.calculMoney('lost')
+                #  print("Coward !")
+                return('quit')
                 break
 
     def calculMoney(self, winLoss, bonus = 'none'):
         bonusCoef = {'none':1, 'blackjack':1.5, 'double':2, 'split':2}
         # use self.money to use player's money
         if winLoss == 'win':
-            self.money += int(self.bet * bonusCoef[bonus])
+            self.money += int(self.bet) * (1 + bonusCoef[bonus])
         elif winLoss in ['busted','lost']:
-            self.money -= int(self.bet * bonusCoef[bonus])
+            self.money -= int(self.bet) * (bonusCoef[bonus] - 1) 
+        elif winLoss == 'draw':
+            self.money += int(self.bet)
         else:
             pass
 
@@ -249,6 +261,10 @@ while anotherRound in 'yY':
     # manage players turn with playTurn() method
     countLost = 0
     for n in players:
+        #  if players[n].playTurn() == 'quit':
+            #  print('Coward !')
+            #  players[n].calculMoney('lost')
+            #  break
         # allow only player with money to play
         if players[n].money > 0:
             printGame(d.name, d.cards, d.calculPoint())
@@ -278,12 +294,14 @@ while anotherRound in 'yY':
                 players[p].calculMoney('win')
             elif points == d.calculPoint():
                 print("Ladies and gentlemen, we have a draw with " + players[p].name + " !\n")
-                players[p].calculMoney('win')
+                players[p].calculMoney('draw')
             elif points > d.calculPoint():
                 print("NOOOOOO ! I've lost ! I'm gonna kill you, you ear me " + players[n].name + " ?\n")
                 players[p].calculMoney('win')
             elif points < d.calculPoint():
                 print("Ahahahahahahaha, I've WON, you 'dear' " + players[n].name + " !\n")
-                players[p].calculMoney('win')
+                players[p].calculMoney('lost')
 
+    for p in players:
+        print(players[p].name + " : " + str(players[p].money) + " dollars left.")
     anotherRound = input("Another round ? \n[Y]es - [N]o : ")
