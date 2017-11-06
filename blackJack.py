@@ -131,18 +131,18 @@ class Dealer(object):
 
             if self.calculPoint() > 21:
                 printGame(self.name, self.cards, self.calculPoint(), final = 'yes')
-                print("Congrats, I'm BUSTED, take your money...\n\n")
+                #  print("Congrats, I'm BUSTED, take your money...\n\n")
                 return('busted')
                 break
             # check if simple win (score = 21) : stop the turn
             elif self.calculPoint() == 21:
                 printGame(self.name, self.cards, self.calculPoint(), final = 'yes')
-                print("I WON, or I didn't loose, nevermind, gimme your money !")
+                #  print("I WON, or I didn't loose, nevermind, gimme your money !")
                 return('win')
                 break
             # break the loop if dealer score < 21 and no simple winner : compare scores with another function
             else:
-                print("We have to check")
+                #  print("We have to check")
                 return(self.calculPoint())
                 break
 
@@ -154,12 +154,13 @@ class Player(Dealer):
     return : a list of cards, money, bet and point of hand 
     """
 
-    def __init__(self, money, number, bet = 0):
+    def __init__(self, money, number, bet = 0, quit = 'no'):
         Dealer.__init__(self)
         # number to ask for player name
         self.name = input('Player ' + str(number) + ', what is your name ? ')
         self.money = money
         self.bet = bet
+        self.quit = quit
 
     def playTurn(self):
         self.bet = input(str(self.name) + ", what's your bet ? ")
@@ -200,9 +201,7 @@ class Player(Dealer):
                 return(self.calculPoint())
                 break
             elif nextMove in 'Qq':
-                #  self.calculMoney('lost')
-                #  print("Coward !")
-                return('quit')
+                self.quit = 'yes'
                 break
 
     def calculMoney(self, winLoss, bonus = 'none'):
@@ -261,10 +260,6 @@ while anotherRound in 'yY':
     # manage players turn with playTurn() method
     countLost = 0
     for n in players:
-        #  if players[n].playTurn() == 'quit':
-            #  print('Coward !')
-            #  players[n].calculMoney('lost')
-            #  break
         # allow only player with money to play
         if players[n].money > 0:
             printGame(d.name, d.cards, d.calculPoint())
@@ -278,29 +273,43 @@ while anotherRound in 'yY':
         print("\nOk, you all have lost, goodbye felows, thanks for the money !")
         break
 
+    # check if all players have quit
+    abandon = 0
+    for p in players:
+        if players[p].quit == 'yes':
+            abandon += 1
+    if abandon == len(players):
+        print("\nYou're all cowards, I'm too good for you, see you !")
+        break
+
     # dealer'r turn, with it's own method
     d.playTurn()
 
     # compare players game with dealer
     # possibly have to change busted and win rules
     for p in players:
-        points = players[p].calculPoint()
-        if points > 21:
-            print(players[p].name + ", you're BUSTED")
+        # check if player has quit or not
+        if players[p].quit == 'yes':
+            print("Ok " + players[p].name + " , you can be a coward if you want to...")
             players[p].calculMoney('lost')
         else:
-            if d.calculPoint() > 21:
-                print("OMG, impossible, I'm... I'm BUSTED..." + players[p].name + ", you have to be paid...\n")
-                players[p].calculMoney('win')
-            elif points == d.calculPoint():
-                print("Ladies and gentlemen, we have a draw with " + players[p].name + " !\n")
-                players[p].calculMoney('draw')
-            elif points > d.calculPoint():
-                print("NOOOOOO ! I've lost ! I'm gonna kill you, you ear me " + players[n].name + " ?\n")
-                players[p].calculMoney('win')
-            elif points < d.calculPoint():
-                print("Ahahahahahahaha, I've WON, you 'dear' " + players[n].name + " !\n")
+            points = players[p].calculPoint()
+            if points > 21:
+                print(players[p].name + ", you're BUSTED")
                 players[p].calculMoney('lost')
+            else:
+                if d.calculPoint() > 21:
+                    print("OMG, impossible, I'm... I'm BUSTED..." + players[p].name + ", you have to be paid...\n")
+                    players[p].calculMoney('win')
+                elif points == d.calculPoint():
+                    print("Ladies and gentlemen, we have a draw with " + players[p].name + " !\n")
+                    players[p].calculMoney('draw')
+                elif points > d.calculPoint():
+                    print("NOOOOOO ! I've lost ! I'm gonna kill you, you ear me " + players[n].name + " ?\n")
+                    players[p].calculMoney('win')
+                elif points < d.calculPoint():
+                    print("Ahahahahahahaha, I've WON, you 'dear' " + players[n].name + " !\n")
+                    players[p].calculMoney('lost')
 
     for p in players:
         print(players[p].name + " : " + str(players[p].money) + " dollars left.")
