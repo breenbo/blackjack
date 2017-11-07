@@ -49,6 +49,7 @@ def printGame(player, cards, points, money = 100, bet = 10, win = 0, final = 'no
     # add comments if Blackjack !
     print(screen)
 
+################################################################################
 
 def playerNb():
     """TODO: Docstring for nbPlayer.
@@ -69,6 +70,7 @@ def playerNb():
                 break
     return(nb)
 
+################################################################################
 
 class Dealer(object):
     """
@@ -146,6 +148,8 @@ class Dealer(object):
                 return(self.calculPoint())
                 break
 
+################################################################################
+
 class Player(Dealer):
     """
     Player object, inherit from Dealer
@@ -216,6 +220,7 @@ class Player(Dealer):
         else:
             pass
 
+################################################################################
 
 # for intro
 intro = 'BlackJack\n'
@@ -235,12 +240,9 @@ except:
 else:
     print("Let's the party begin !\n")
 
-# display dealer cards before bet
-#  printGame(d.name, d.cards, d.calculPoint())
-
 # display cards fos each players and dealer
-players = {}
 # use dict instead of increment variable name... Usefull to use players for another round, or abandon, or etc.
+players = {}
 
 anotherRound = 'y'
 roundCount = 0
@@ -290,7 +292,7 @@ while anotherRound in 'yY':
     for p in players:
         # check if player has quit or not
         if players[p].quit == 'yes':
-            print("Ok " + players[p].name + " , you can be a coward if you want to...")
+            print("Ok " + players[p].name + " , you can be a coward if you want to...\n")
             players[p].calculMoney('lost')
         else:
             points = players[p].calculPoint()
@@ -311,6 +313,8 @@ while anotherRound in 'yY':
                     print("Ahahahahahahaha, I've WON, you 'dear' " + players[n].name + " !\n")
                     players[p].calculMoney('lost')
 
+    print("----------------------")
     for p in players:
-        print(players[p].name + " : " + str(players[p].money) + " dollars left.")
+        print(" " + players[p].name + " : " + str(players[p].money) + " dollars left.")
+    print("----------------------")
     anotherRound = input("Another round ? \n[Y]es - [N]o : ")
