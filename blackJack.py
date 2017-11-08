@@ -1,18 +1,27 @@
 #  Todo : blackjack text
-#  1. one player vs automated dealer
-#  2. player can stand or hit
-#  3. player must be able to pick his betting amount
 #  4. keep track of player total money
-#  5. alert the player of wins, losses, busts, etc.
-#  6. use OOP
-#  7. can add other players
 
 ################################################################################
+#                                 BlackJack game
+#
+# Features :
+#    - 1 to 4 players
+#    - random player's and dealer's card
+#    - dealer hit while his score <17
+#    - hit, stand, double, split or quit
+#    - bets can be picked
+#    - manage amount of player's money, with bonuses for double, split and blackjack
+#    - use OOP
+#    - lots of fun
+################################################################################
 
-#  for split : use set() iot see if there are double items (len(set(l))<len(l))
+# to split : use set() iot see if there are double items (len(set(l))<len(l))
 
 from random import *
 
+################################################################################
+#    Function : print the game on the board
+################################################################################
 def printGame(player, cards, points, money = 100, bet = 10, win = 0, final = 'no'):
     """
     print board
@@ -50,6 +59,8 @@ def printGame(player, cards, points, money = 100, bet = 10, win = 0, final = 'no
     print(screen)
 
 ################################################################################
+#   Function : define the player's number
+################################################################################
 
 def playerNb():
     """TODO: Docstring for nbPlayer.
@@ -71,13 +82,15 @@ def playerNb():
     return(nb)
 
 ################################################################################
+#    Define the dealer object with methods
+################################################################################
 
 class Dealer(object):
     """
     Dealer object
     init : 2 random cards
     methods : hit, score of hand
-    return : list of cards, point of hand 
+    return : list of cards, point of hand
     """
     # set the same game for all players
     game = list(range(2, 11))
@@ -118,7 +131,7 @@ class Dealer(object):
             except:
                 self.score += points[card]
             else:
-                self.score += card
+                self.score += int(card)
         # set value of 'A' to 1 if self.score to high
         if self.score > 21 and 'A' in self.cards:
             self.score -= 10
@@ -149,21 +162,23 @@ class Dealer(object):
                 break
 
 ################################################################################
+#    Define the player object, inherit from dealer
+################################################################################
 
 class Player(Dealer):
     """
     Player object, inherit from Dealer
     init : name, money
-    method : 
-    return : a list of cards, money, bet and point of hand 
+    method :
+    return : a list of cards, money, bet and point of hand
     """
 
     def __init__(self, money, number, bet = 0, quit = 'no'):
         Dealer.__init__(self)
         # number to ask for player name
         self.name = input('Player ' + str(number) + ', what is your name ? ')
-        self.money = money
         self.bet = bet
+        self.money = money
         self.quit = quit
 
     def playTurn(self):
@@ -214,24 +229,29 @@ class Player(Dealer):
         if winLoss == 'win':
             self.money += int(self.bet) * (1 + bonusCoef[bonus])
         elif winLoss in ['busted','lost']:
-            self.money -= int(self.bet) * (bonusCoef[bonus] - 1) 
+            self.money -= int(self.bet) * (bonusCoef[bonus] - 1)
         elif winLoss == 'draw':
             self.money += int(self.bet)
         else:
             pass
 
 ################################################################################
+#    Intro
+################################################################################
 
-# for intro
 intro = 'BlackJack\n'
 intro += '========='
 
 d = Dealer()
 
 print(intro)
-# initiate the game : nb of players and names
+################################################################################
+#    Initiate the game : nb of players and names
+################################################################################
+
 nbPlayer = playerNb()
 initialMoney = input("How many bucks for the players ? \n")
+
 try:
     int(initialMoney)
 except:
@@ -240,6 +260,9 @@ except:
 else:
     print("Let's the party begin !\n")
 
+################################################################################
+#    Manage the game, the score and the player's money
+################################################################################
 # display cards fos each players and dealer
 # use dict instead of increment variable name... Usefull to use players for another round, or abandon, or etc.
 players = {}
@@ -318,3 +341,5 @@ while anotherRound in 'yY':
         print(" " + players[p].name + " : " + str(players[p].money) + " dollars left.")
     print("----------------------")
     anotherRound = input("Another round ? \n[Y]es - [N]o : ")
+    if anotherRound in 'nN':
+        print("Ok that was fun, see you bros!")
