@@ -173,13 +173,14 @@ class Player(Dealer):
     return : a list of cards, money, bet and point of hand
     """
 
-    def __init__(self, money, number, bet = 0, quit = 'no'):
+    def __init__(self, money, number, bet = 0, quit = 'no', bonus = 'none'):
         Dealer.__init__(self)
         # number to ask for player name
         self.name = input('Player ' + str(number) + ', what is your name ? ')
         self.bet = bet
         self.money = money
         self.quit = quit
+        self.bonus = bonus
 
     def playTurn(self):
         self.bet = input(str(self.name) + ", what's your bet ? ")
@@ -209,27 +210,24 @@ class Player(Dealer):
                 break
 
             nextMove = input("What's your next move ? \n [H]it - [S]tand - [D]ouble - Spli[t] - [Q]uit\n ")
-            if nextMove in 'Hh':
+            bonus = {'H':1, 'S':1, 'D':2, 'T':2, 'Q':1, 'h':1, 's':1, 'd':2, 't':2, 'q':1}
+            self.bonus = bonus[nextMove]
+            if nextMove in 'HhDd':
                 self.hit()
-            elif nextMove in 'Dd':
-                self.hit()
-                self.bet = 2 * int(self.bet)
+            if nextMove in 'DdSs':
                 return(self.calculPoint())
-                break
-            elif nextMove in 'Ss':
-                return(self.calculPoint())
-                break
-            elif nextMove in 'Qq':
+            if nextMove in 'Qq':
                 self.quit = 'yes'
                 break
 
-    def calculMoney(self, winLoss, bonus = 'none'):
-        bonusCoef = {'none':1, 'blackjack':1.5, 'double':2, 'split':2}
-        # use self.money to use player's money
+    def calculMoney(self, winLoss):
+        # use self.money to use player's money and self.bonus depending of the choices
         if winLoss == 'win':
-            self.money += int(self.bet) * (1 + bonusCoef[bonus])
+            #  self.money += int(self.bet) * (1 + bonusCoef[self.bonus])
+            self.money += int(self.bet) * (1 + float(self.bonus))
         elif winLoss in ['busted','lost']:
-            self.money -= int(self.bet) * (bonusCoef[bonus] - 1)
+            #  self.money += int(self.bet) * (bonusCoef[self.bonus] - 1)
+            self.money -= int(self.bet) * (float(self.bonus) - 1)
         elif winLoss == 'draw':
             self.money += int(self.bet)
         else:
@@ -260,6 +258,7 @@ except:
 else:
     print("Let's the party begin !\n")
 
+
 ################################################################################
 #    Manage the game, the score and the player's money
 ################################################################################
@@ -274,12 +273,20 @@ while anotherRound in 'yY':
     if roundCount == 0:
         for n in range(1, nbPlayer + 1):
             players[n] = Player(int(initialMoney), n)
-        roundCount += 1
+            # check if there is a blackjack
+            if players[n].calculPoint() == 21:
+                players[n].bonus = 1.5
+                print("\nBLACKJACK !!!")
+        roundCount = 1
     # reset cards for another round
     else:
         # use dic because player with no money are deleted
         for n in players:
             players[n].resetCards()
+            # check if there is a blackjack
+            if players[n].calculPoint() == 21:
+                players[n].bonus = 1.5
+                print("\nBLACKJACK !!!")
         d.resetCards()
 
     # manage players turn with playTurn() method
@@ -342,4 +349,4 @@ while anotherRound in 'yY':
     print("----------------------")
     anotherRound = input("Another round ? \n[Y]es - [N]o : ")
     if anotherRound in 'nN':
-        print("Ok that was fun, see you bros!")
+        print("\nOk that was fun, see you bros!\n")
