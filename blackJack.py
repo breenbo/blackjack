@@ -1,9 +1,5 @@
-#  Todo : blackjack text
-#  4. keep track of player total money
-
 ################################################################################
 #                                 BlackJack game
-#
 # Features :
 #    - 1 to 4 players
 #    - random player's and dealer's card
@@ -209,7 +205,8 @@ class Player(Dealer):
                 print("Congrat's, you WON ! Take your money !\n")
                 break
 
-            nextMove = input("What's your next move ? \n [H]it - [S]tand - [D]ouble - Spli[t] - [Q]uit\n ")
+            #  nextMove = input("What's your next move ? \n [H]it - [S]tand - [D]ouble - Spli[t] - [Q]uit\n ")
+            nextMove = input("What's your next move ? \n [H]it - [S]tand - [D]ouble - [Q]uit\n ")
             bonus = {'H':1, 'S':1, 'D':2, 'T':2, 'Q':1, 'h':1, 's':1, 'd':2, 't':2, 'q':1}
             self.bonus = bonus[nextMove]
             if nextMove in 'HhDd':
@@ -276,17 +273,16 @@ while anotherRound in 'yY':
             # check if there is a blackjack
             if players[n].calculPoint() == 21:
                 players[n].bonus = 1.5
-                print("\nBLACKJACK !!!")
+                print("\nBLACKJACK !!! Woowoowoop !!!")
         roundCount = 1
     # reset cards for another round
     else:
-        # use dic because player with no money are deleted
         for n in players:
             players[n].resetCards()
             # check if there is a blackjack
             if players[n].calculPoint() == 21:
                 players[n].bonus = 1.5
-                print("\nBLACKJACK !!!")
+                print("\nBLACKJACK !!! Woowoowoop !!!")
         d.resetCards()
 
     # manage players turn with playTurn() method
@@ -349,4 +345,4 @@ while anotherRound in 'yY':
     print("----------------------")
     anotherRound = input("Another round ? \n[Y]es - [N]o : ")
     if anotherRound in 'nN':
-        print("\nOk that was fun, see you bros!\n")
+        print("\nOk that was fun, see you bro!\n")
